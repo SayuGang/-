@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球哺乳纲生物检索 - 哺乳动物百科</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        :root {
+            --primary-color: #2c7873;
+            --primary-dark: #1f5c58;
+            --secondary-color: #6fb3b8;
+            --light-color: #f7f9f9;
+            --accent-color: #ff9a3c;
+            --text-color: #333;
+            --text-light: #666;
+            --border-color: #e0e0e0;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+        }
+
+        .search-container {
+            flex-grow: 1;
+            max-width: 500px;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1.2rem 0.8rem 3rem;
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(44, 120, 115, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(44, 120, 115, 0.1);
+        }
+
+        .btn-admin {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            background-color: #e68a2e;
+        }
+
+        /* 主要内容区域 */
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            gap: 2rem;
+        }
+
+        /* 左侧分类导航 */
+        .sidebar {
+            flex: 0 0 280px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            height: fit-content;
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light-color);
+            color: var(--primary-dark);
+        }
+
+        .sidebar-title i {
+            color: var(--accent-color);
+        }
+
+        .taxonomy-tree {
+            list-style: none;
+        }
+
+        .taxonomy-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .taxonomy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .taxonomy-header:hover {
+            background-color: #e8f1f1;
+        }
+
+        .taxonomy-header.active {
+            background-color: rgba(44, 120, 115, 0.15);
+            color: var(--primary-dark);
+        }
+
+        .taxonomy-toggle {
+            transition: transform 0.3s ease;
+        }
+
+        .taxonomy-toggle.rotated {
+            transform: rotate(90deg);
+        }
+
+        .taxonomy-children {
+            list-style: none;
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .taxonomy-children.expanded {
+            max-height: 1000px;
+        }
+
+        .taxonomy-child {
+            padding: 0.6rem 1rem;
+            border-left: 2px solid var(--border-color);
+            margin-bottom: 0.3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .taxonomy-child:hover {
+            border-left-color: var(--secondary-color);
+            background-color: rgba(111, 179, 184, 0.1);
+            padding-left: 1.3rem;
+        }
+
+        .taxonomy-child.selected {
+            border-left-color: var(--primary-color);
+            background-color: rgba(44, 120, 115, 0.1);
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* 右侧内容区域 */
+        .content-area {
+            flex: 1;
+        }
+
+        .welcome-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .welcome-title {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-text {
+            font-size: 1.1rem;
+            max-width: 800px;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 1.8rem;
+            opacity: 0.9;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* 物种网格 */
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .species-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .species-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .species-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .species-image {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .species-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-endangered {
+            background-color: rgba(255, 76, 76, 0.9);
+            color: white;
+        }
+
+        .status-vulnerable {
+            background-color: rgba(255, 165, 0, 0.9);
+            color: white;
+        }
+
+        .status-least-concern {
+            background-color: rgba(76, 175, 80, 0.9);
+            color: white;
+        }
+
+        .species-info {
+            padding: 1.5rem;
+        }
+
+        .species-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+
+        .species-scientific {
+            font-style: italic;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .species-desc {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .species-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* 物种详情页 */
+        .species-detail {
+            display: none;
+            background-color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: rgba(44, 120, 115, 0.1);
+        }
+
+        .detail-title {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-subtitle {
+            font-style: italic;
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .detail-image {
+            height: 350px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+        }
+
+        .detail-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .info-section {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-content {
+            line-height: 1.7;
+        }
+
+        .taxonomy-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .taxonomy-crumb {
+            padding: 0.4rem 0.8rem;
+            background-color: rgba(44, 120, 115, 0.1);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+        }
+
+        /* 管理员面板 */
+        .admin-panel {
+            display: none;
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--light-color);
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-table-container {
+            overflow-x: auto;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .admin-table th {
+            background-color: var(--light-color);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .admin-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-table tr:hover {
+            background-color: rgba(44, 120, 115, 0.05);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .action-edit {
+            background-color: rgba(44, 120, 115, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .action-delete {
+            background-color: rgba(255, 76, 76, 0.1);
+            color: #ff4444;
+        }
+
+        .action-view {
+            background-color: rgba(111, 179, 184, 0.1);
+            color: var(--secondary-color);
+        }
+
+        /* 登录注册面板 */
+        .auth-panel {
+            display: none;
+            max-width: 450px;
+            margin: 3rem auto;
+            background-color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary-dark);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-input {
+            padding: 0.9rem 1.2rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(44, 120, 115, 0.2);
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .auth-toggle a {
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                flex: none;
+                width: 100%;
+            }
+            
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .search-container {
+                width: 100%;
+                margin: 0;
+            }
+            
+            .user-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .species-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .welcome-section {
+                padding: 1.5rem;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="#" class="logo" onclick="showHomePage(); return false;">
+                <i class="fas fa-paw logo-icon"></i>
+                <span>哺乳动物百科</span>
+            </a>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索哺乳动物名称、学名或特征...">
+            </div>
+            
+            <div class="user-actions">
+                <button class="btn btn-outline" onclick="showAuthPanel('login')">登录</button>
+                <button class="btn btn-primary" onclick="showAuthPanel('register')">注册</button>
+                <button class="btn btn-admin" onclick="showAdminPanel()">管理面板</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 主内容区域 -->
+    <div class="main-container">
+        <!-- 左侧分类导航 -->
+        <aside class="sidebar">
+            <div class="sidebar-title">
+                <i class="fas fa-sitemap"></i>
+                <h2>哺乳纲分类</h2>
+            </div>
+            <ul class="taxonomy-tree" id="taxonomyTree">
+                <!-- 分类树将通过JavaScript动态生成 -->
+            </ul>
+        </aside>
+        
+        <!-- 右侧内容区域 -->
+        <main class="content-area">
+            <!-- 欢迎区域 -->
+            <section class="welcome-section" id="welcomeSection">
+                <h1 class="welcome-title">探索神奇的哺乳动物世界</h1>
+                <p class="welcome-text">
+                    欢迎来到全球哺乳纲生物检索系统。这里收录了来自世界各地的哺乳动物信息，
+                    从广袤草原的狮群到深邃海洋的鲸类，从热带雨林的灵长类到极地冰原的北极熊。
+                    通过我们的分类系统或搜索功能，开始您的探索之旅吧！
+                </p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <i class="fas fa-dog stat-icon"></i>
+                        <div>
+                            <div class="stat-number" id="speciesCount">0</div>
+                            <div class="stat-label">已收录物种</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-images stat-icon"></i>
+                        <div>
+                            <div class="stat-number" id="imageCount">0</div>
+                            <div class="stat-label">图片资料</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-users stat-icon"></i>
+                        <div>
+                            <div class="stat-number" id="userCount">0</div>
+                            <div class="stat-label">注册用户</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 物种展示网格 -->
+            <section id="speciesGridSection">
+                <h2 class="section-title">
+                    <i class="fas fa-th-large"></i>
+                    <span id="gridTitle">哺乳动物精选</span>
+                </h2>
+                <div class="species-grid" id="speciesGrid">
+                    <!-- 物种卡片将通过JavaScript动态生成 -->
+                </div>
+            </section>
+            
+            <!-- 物种详情页 -->
+            <section class="species-detail" id="speciesDetail">
+                <!-- 详情页内容将通过JavaScript动态生成 -->
+            </section>
+            
+            <!-- 管理员面板 -->
+            <section class="admin-panel" id="adminPanel">
+                <div class="admin-header">
+                    <h2 class="admin-title">物种管理面板</h2>
+                    <div class="admin-actions">
+                        <button class="btn btn-primary" onclick="showAddSpeciesForm()">
+                            <i class="fas fa-plus"></i> 新增物种
+                        </button>
+                        <button class="btn btn-outline" onclick="showHomePage()">
+                            <i class="fas fa-home"></i> 返回首页
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>物种ID</th>
+                                <th>中文名</th>
+                                <th>学名</th>
+                                <th>分类</th>
+                                <th>保护状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <!-- 管理员表格数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- 登录注册面板 -->
+    <div class="auth-panel" id="authPanel">
+        <!-- 登录/注册表单将通过JavaScript动态生成 -->
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>© 2026 全球哺乳纲生物检索系统 | 仅供学习与演示使用</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">数据来源：模拟数据 | 设计：哺乳动物百科团队</p>
+    </footer>
+
+    <script>
+        // 模拟哺乳动物数据库
+        const mammalDatabase = {
+            species: [
+                {
+                    id: 1,
+                    chineseName: "非洲狮",
+                    scientificName: "Panthera leo",
+                    imageUrl: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "非洲狮是猫科豹属的一种大型哺乳动物，是现存平均体重最大的猫科动物，也是世界上唯一一种雌雄两态的猫科动物。",
+                    conservationStatus: "易危",
+                    conservationColor: "status-vulnerable",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "食肉目",
+                        family: "猫科",
+                        genus: "豹属",
+                        species: "狮"
+                    },
+                    habitat: "主要分布于非洲撒哈拉沙漠以南的草原、稀树草原和灌木丛",
+                    distribution: "非洲大部分地区，历史上也分布于西南亚和印度",
+                    characteristics: "雄狮体长可达2.5米，体重可达250公斤，以浓密的鬃毛为特征；雌狮较小，无鬃毛。",
+                    diet: "肉食性，主要捕食有蹄类动物如斑马、羚羊、水牛等"
+                },
+                {
+                    id: 2,
+                    chineseName: "大熊猫",
+                    scientificName: "Ailuropoda melanoleuca",
+                    imageUrl: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "大熊猫是熊科的一种哺乳动物，以其黑白相间的毛色和圆润的身体而闻名，是中国的国宝。",
+                    conservationStatus: "易危",
+                    conservationColor: "status-vulnerable",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "食肉目",
+                        family: "熊科",
+                        genus: "大熊猫属",
+                        species: "大熊猫"
+                    },
+                    habitat: "中国西南部海拔1500-3000米的温带森林",
+                    distribution: "中国四川、陕西和甘肃的山区",
+                    characteristics: "体长约1.2-1.9米，体重可达160公斤，具有标志性的黑白毛色和“伪拇指”用于抓握竹子。",
+                    diet: "以竹子为主食，占其饮食的99%以上"
+                },
+                {
+                    id: 3,
+                    chineseName: "虎鲸",
+                    scientificName: "Orcinus orca",
+                    imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "虎鲸是海豚科中体型最大的成员，是一种高度社会化的哺乳动物，拥有复杂的狩猎技巧和声音交流系统。",
+                    conservationStatus: "数据缺乏",
+                    conservationColor: "status-least-concern",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "鲸偶蹄目",
+                        family: "海豚科",
+                        genus: "虎鲸属",
+                        species: "虎鲸"
+                    },
+                    habitat: "全球所有海洋，从极地到热带水域",
+                    distribution: "全球性分布，但不同生态型有特定的分布范围",
+                    characteristics: "体长可达9米，体重可达5.5吨，背鳍明显，雄性可达1.8米高，黑白相间的体色易于识别。",
+                    diet: "食性多样，包括鱼类、海豹、海狮、鲸类甚至鲨鱼"
+                },
+                {
+                    id: 4,
+                    chineseName: "红毛猩猩",
+                    scientificName: "Pongo",
+                    imageUrl: "https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "红毛猩猩是亚洲唯一的大型类人猿，与人类共享约97%的DNA，以其长而蓬松的红褐色毛发和高度智慧而闻名。",
+                    conservationStatus: "极危",
+                    conservationColor: "status-endangered",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "灵长目",
+                        family: "人科",
+                        genus: "猩猩属",
+                        species: "红毛猩猩"
+                    },
+                    habitat: "热带雨林，特别是低地森林和泥炭沼泽森林",
+                    distribution: "婆罗洲和苏门答腊岛",
+                    characteristics: "雄性体长约1.2-1.5米，体重可达100公斤；前肢长，适合树栖生活；智力高，能使用工具。",
+                    diet: "主要以水果为食，也吃树叶、树皮、花、昆虫和鸟蛋"
+                },
+                {
+                    id: 5,
+                    chineseName: "灰狼",
+                    scientificName: "Canis lupus",
+                    imageUrl: "https://images.unsplash.com/photo-1514984879728-be0aff75a6e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "灰狼是犬科中体型最大的野生成员，是社会性极强的群居动物，以其卓越的耐力、合作狩猎和复杂的社群结构而闻名。",
+                    conservationStatus: "无危",
+                    conservationColor: "status-least-concern",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "食肉目",
+                        family: "犬科",
+                        genus: "犬属",
+                        species: "狼"
+                    },
+                    habitat: "多种生境，包括苔原、森林、草原和沙漠",
+                    distribution: "北半球广泛分布，包括北美、欧洲和亚洲",
+                    characteristics: "体长约1-1.6米，体重30-80公斤；毛色多变，通常为灰色，也有白色、黑色和褐色变种。",
+                    diet: "肉食性，主要捕食有蹄类动物如鹿、麋鹿、野牛，也吃小型哺乳动物"
+                },
+                {
+                    id: 6,
+                    chineseName: "非洲象",
+                    scientificName: "Loxodonta",
+                    imageUrl: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "非洲象是现存最大的陆生动物，以其巨大的耳朵、长牙和灵活的长鼻而闻名，是生态系统中重要的关键物种。",
+                    conservationStatus: "濒危",
+                    conservationColor: "status-endangered",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "长鼻目",
+                        family: "象科",
+                        genus: "非洲象属",
+                        species: "非洲象"
+                    },
+                    habitat: "多种栖息地，包括草原、森林、沙漠和沼泽",
+                    distribution: "撒哈拉以南非洲",
+                    characteristics: "肩高2.2-4米，体重2-6.3吨；雌雄均有象牙，但雌性的较小；耳朵大，有助于散热。",
+                    diet: "草食性，每天可消耗100-300公斤植物，包括草、水果、树皮和树根"
+                },
+                {
+                    id: 7,
+                    chineseName: "鸭嘴兽",
+                    scientificName: "Ornithorhynchus anatinus",
+                    imageUrl: "https://images.unsplash.com/photo-1570481662006-a3a137468f13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    description: "鸭嘴兽是一种独特的半水生哺乳动物，是少数几种产卵的哺乳动物之一，具有鸭嘴、水獭身体和海狸尾巴的奇特组合。",
+                    conservationStatus: "近危",
+                    conservationColor: "status-vulnerable",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "单孔目",
+                        family: "鸭嘴兽科",
+                        genus: "鸭嘴兽属",
+                        species: "鸭嘴兽"
+                    },
+                    habitat: "澳大利亚东部的淡水河流、湖泊和溪流",
+                    distribution: "澳大利亚东部，包括塔斯马尼亚",
+                    characteristics: "体长约30-60厘米，体重0.7-2.4公斤；嘴部像鸭嘴，覆盖柔软皮肤；后足有有毒距，雄性毒性更强。",
+                    diet: "肉食性，主要捕食水生昆虫、幼虫、小龙虾和蠕虫"
+                },
+                {
+                    id: 8,
+                    chineseName: "猎豹",
+                    scientificName: "Acinonyx jubatus",
+                    imageUrl: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+                    description: "猎豹是陆地上速度最快的动物，短距离冲刺时速可达112公里，以其流线型身体、细长腿和独特的黑色"泪痕"而闻名。",
+                    conservationStatus: "易危",
+                    conservationColor: "status-vulnerable",
+                    taxonomy: {
+                        phylum: "脊索动物门",
+                        class: "哺乳纲",
+                        order: "食肉目",
+                        family: "猫科",
+                        genus: "猎豹属",
+                        species: "猎豹"
+                    },
+                    habitat: "草原、稀树草原和半沙漠地区",
+                    distribution: "非洲大部分地区和伊朗的一小部分地区",
+                    characteristics: "体长约1.1-1.5米，体重21-72公斤；身体纤细，腿长，脊柱灵活；脸上有独特的黑色"泪痕"从眼角延伸到嘴角。",
+                    diet: "肉食性，主要捕食中小型有蹄类动物如瞪羚、羚羊和野兔"
+                }
+            ],
+            taxonomyTree: {
+                "脊索动物门": {
+                    "哺乳纲": {
+                        "食肉目": ["猫科", "犬科", "熊科", "鼬科", "鬣狗科"],
+                        "灵长目": ["人科", "猴科", "狐猴科", "懒猴科"],
+                        "鲸偶蹄目": ["海豚科", "鲸科", "牛科", "河马科", "骆驼科"],
+                        "长鼻目": ["象科"],
+                        "奇蹄目": ["马科", "犀科", "貘科"],
+                        "啮齿目": ["松鼠科", "仓鼠科", "河狸科", "豚鼠科"],
+                        "兔形目": ["兔科", "鼠兔科"],
+                        "单孔目": ["鸭嘴兽科", "针鼹科"]
+                    }
+                }
+            },
+            stats: {
+                speciesCount: 6421,
+                imageCount: 15420,
+                userCount: 3245
+            }
+        };
+
+        // 当前选中的分类
+        let currentTaxonomy = "all";
+        let currentSpecies = null;
+        let isLoggedIn = false;
+        let isAdmin = false;
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化统计数据
+            document.getElementById('speciesCount').textContent = mammalDatabase.stats.speciesCount.toLocaleString();
+            document.getElementById('imageCount').textContent = mammalDatabase.stats.imageCount.toLocaleString();
+            document.getElementById('userCount').textContent = mammalDatabase.stats.userCount.toLocaleString();
+            
+            // 初始化分类树
+            initTaxonomyTree();
+            
+            // 初始化物种网格
+            renderSpeciesGrid(mammalDatabase.species);
+            
+            // 绑定搜索事件
+            document.getElementById('searchInput').addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // 显示主页
+            showHomePage();
+        });
+
+        // 初始化分类树
+        function initTaxonomyTree() {
+            const treeContainer = document.getElementById('taxonomyTree');
+            const taxonomy = mammalDatabase.taxonomyTree;
+            
+            // 添加"全部"选项
+            const allItem = document.createElement('li');
+            allItem.className = 'taxonomy-item';
+            allItem.innerHTML = `
+                <div class="taxonomy-header ${currentTaxonomy === 'all' ? 'active' : ''}" onclick="filterByTaxonomy('all')">
+                    <span>全部哺乳动物</span>
+                    <span>${mammalDatabase.species.length}</span>
+                </div>
+            `;
+            treeContainer.appendChild(allItem);
+            
+            // 遍历分类树
+            for (const phylum in taxonomy) {
+                for (const className in taxonomy[phylum]) {
+                    const classItem = document.createElement('li');
+                    classItem.className = 'taxonomy-item';
+                    
+                    const orderCount = Object.keys(taxonomy[phylum][className]).length;
+                    
+                    classItem.innerHTML = `
+                        <div class="taxonomy-header" onclick="toggleTaxonomy('${className}')">
+                            <span>${className}</span>
+                            <span class="taxonomy-toggle">▶</span>
+                        </div>
+                        <ul class="taxonomy-children" id="${className}-children">
+                        </ul>
+                    `;
+                    
+                    treeContainer.appendChild(classItem);
+                    
+                }
+            }
+        }
+
+        // 切换分类展开/收起
+        function toggleTaxonomy(className) {
+            const children = document.getElementById(`${className}-children`);
+            const toggle = document.querySelector(`#${className}-children`).previousElementSibling.querySelector('.taxonomy-toggle');
+            
+            if (children.classList.contains('expanded')) {
+                children.classList.remove('expanded');
+                toggle.classList.remove('rotated');
+            } else {
+                // 先收起其他展开的分类
+                const expandedItems = document.querySelectorAll('.taxonomy-children.expanded');
+                expandedItems.forEach(item => {
+                    item.classList.remove('expanded');
+                    item.previousElementSibling.querySelector('.taxonomy-toggle').classList.remove('rotated');
+                });
+                
+                // 展开当前分类
+                children.classList.add('expanded');
+                toggle.classList.add('rotated');
+                
+                // 如果子项还未生成，则生成
+                if (children.children.length === 0) {
+                    const taxonomy = mammalDatabase.taxonomyTree;
+                    for (const phylum in taxonomy) {
+                        if (taxonomy[phylum][className]) {
+                            for (const order in taxonomy[phylum][className]) {
+                                const families = taxonomy[phylum][className][order];
+                                
+                                const orderItem = document.createElement('li');
+                                orderItem.className = 'taxonomy-item';
+                                orderItem.innerHTML = `
+                                    <div class="taxonomy-header" onclick="toggleOrder('${order}', '${className}')">
+                                        <span>${order}</span>
+                                        <span class="taxonomy-toggle">▶</span>
+                                    </div>
+                                    <ul class="taxonomy-children" id="${className}-${order}-children">
+                                    </ul>
+                                `;
+                                children.appendChild(orderItem);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 切换目级展开/收起
+        function toggleOrder(order, className) {
+            const children = document.getElementById(`${className}-${order}-children`);
+            const toggle = document.querySelector(`#${className}-${order}-children`).previousElementSibling.querySelector('.taxonomy-toggle');
+            
+            if (children.classList.contains('expanded')) {
+                children.classList.remove('expanded');
+                toggle.classList.remove('rotated');
+            } else {
+                children.classList.add('expanded');
+                toggle.classList.add('rotated');
+                
+                // 如果科级子项还未生成，则生成
+                if (children.children.length === 0) {
+                    const taxonomy = mammalDatabase.taxonomyTree;
+                    for (const phylum in taxonomy) {
+                        if (taxonomy[phylum][className] && taxonomy[phylum][className][order]) {
+                            const families = taxonomy[phylum][className][order];
+                            
+                            families.forEach(family => {
+                                const familyItem = document.createElement('li');
+                                familyItem.className = 'taxonomy-child';
+                                familyItem.textContent = family;
+                                familyItem.onclick = function() {
+                                    filterByTaxonomy(family, `${className} > ${order} > ${family}`);
+                                };
+                                children.appendChild(familyItem);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        // 按分类筛选物种
+        function filterByTaxonomy(taxonomy, displayName = "全部哺乳动物") {
+            // 更新当前选中的分类
+            currentTaxonomy = taxonomy;
+            
+            // 更新分类树选中状态
+            document.querySelectorAll('.taxonomy-header, .taxonomy-child').forEach(item => {
+                item.classList.remove('active', 'selected');
+            });
+            
+            if (taxonomy === 'all') {
+                document.querySelectorAll('.taxonomy-header')[0].classList.add('active');
+            }
+            
+            // 筛选物种
+            let filteredSpecies = mammalDatabase.species;
+            if (taxonomy !== 'all') {
+                filteredSpecies = mammalDatabase.species.filter(species => {
+                    // 简化筛选逻辑：按科筛选
+                    return Object.values(species.taxonomy).includes(taxonomy);
+                });
+            }
+            
+            // 更新网格标题
+            document.getElementById('gridTitle').textContent = displayName;
+            
+            // 渲染筛选后的物种
+            renderSpeciesGrid(filteredSpecies);
+            
+            // 确保显示物种网格
+            showSpeciesGrid();
+        }
+
+        // 渲染物种网格
+        function renderSpeciesGrid(speciesArray) {
+            const gridContainer = document.getElementById('speciesGrid');
+            gridContainer.innerHTML = '';
+            
+            if (speciesArray.length === 0) {
+                gridContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-light);">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <h3>未找到相关物种</h3>
+                        <p>请尝试其他搜索词或分类</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            speciesArray.forEach(species => {
+                const speciesCard = document.createElement('div');
+                speciesCard.className = 'species-card';
+                speciesCard.onclick = () => showSpeciesDetail(species.id);
+                
+                // 截断描述文本
+                const shortDescription = species.description.length > 100 
+                    ? species.description.substring(0, 100) + '...' 
+                    : species.description;
+                
+                speciesCard.innerHTML = `
+                    <div class="species-image" style="background-image: url('${species.imageUrl}')">
+                        <div class="species-status ${species.conservationColor}">${species.conservationStatus}</div>
+                    </div>
+                    <div class="species-info">
+                        <h3 class="species-name">${species.chineseName}</h3>
+                        <p class="species-scientific">${species.scientificName}</p>
+                        <p class="species-desc">${shortDescription}</p>
+                        <div class="species-meta">
+                            <span><i class="fas fa-paw"></i> ${species.taxonomy.order}</span>
+                            <span><i class="fas fa-globe-americas"></i> ${species.distribution.split('，')[0]}</span>
+                        </div>
+                    </div>
+                `;
+                
+                gridContainer.appendChild(speciesCard);
+            });
+        }
+
+        // 显示物种详情
+        function showSpeciesDetail(speciesId) {
+            const species = mammalDatabase.species.find(s => s.id === speciesId);
+            if (!species) return;
+            
+            currentSpecies = species;
+            
+            // 隐藏其他部分
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('speciesGridSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('authPanel').style.display = 'none';
+            
+            // 显示详情页
+            const detailSection = document.getElementById('speciesDetail');
+            detailSection.style.display = 'block';
+            
+            // 生成分类面包屑
+            const taxonomy = species.taxonomy;
+            const breadcrumbHtml = `
+                <span class="taxonomy-crumb">${taxonomy.phylum}</span>
+                <span class="taxonomy-crumb">${taxonomy.class}</span>
+                <span class="taxonomy-crumb">${taxonomy.order}</span>
+                <span class="taxonomy-crumb">${taxonomy.family}</span>
+                <span class="taxonomy-crumb">${taxonomy.genus}</span>
+                <span class="taxonomy-crumb">${taxonomy.species}</span>
+            `;
+            
+            // 设置详情页内容
+            detailSection.innerHTML = `
+                <button class="back-button" onclick="showSpeciesGrid()">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </button>
+                
+                <div class="detail-header">
+                    <div>
+                        <h1 class="detail-title">${species.chineseName}</h1>
+                        <p class="detail-subtitle">${species.scientificName}</p>
+                        <div class="taxonomy-breadcrumb">
+                            ${breadcrumbHtml}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="species-status ${species.conservationColor}" style="font-size: 1rem; padding: 0.5rem 1rem;">保护状态: ${species.conservationStatus}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-content">
+                    <div class="detail-image" style="background-image: url('${species.imageUrl}')"></div>
+                    
+                    <div class="detail-info">
+                        <div class="info-section">
+                            <h3 class="info-title"><i class="fas fa-info-circle"></i> 基本描述</h3>
+                            <p class="info-content">${species.description}</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h3 class="info-title"><i class="fas fa-map-marker-alt"></i> 分布与栖息地</h3>
+                            <p class="info-content"><strong>分布范围：</strong>${species.distribution}</p>
+                            <p class="info-content"><strong>栖息地：</strong>${species.habitat}</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h3 class="info-title"><i class="fas fa-paw"></i> 形态特征</h3>
+                            <p class="info-content">${species.characteristics}</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h3 class="info-title"><i class="fas fa-utensils"></i> 食性与行为</h3>
+                            <p class="info-content"><strong>食性：</strong>${species.diet}</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h3 class="info-title"><i class="fas fa-users"></i> 用户互动</h3>
+                            <div class="info-content">
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                                        <i class="far fa-heart"></i> 收藏
+                                    </button>
+                                    <button class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-share-alt"></i> 分享
+                                    </button>
+                                    <button class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                                        <i class="far fa-comment"></i> 评论
+                                    </button>
+                                </div>
+                                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-light);">
+                                    <i class="fas fa-info-circle"></i> 登录后可使用全部互动功能
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 显示物种网格
+        function showSpeciesGrid() {
+            document.getElementById('welcomeSection').style.display = 'block';
+            document.getElementById('speciesGridSection').style.display = 'block';
+            document.getElementById('speciesDetail').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('authPanel').style.display = 'none';
+        }
+
+        // 显示主页
+        function showHomePage() {
+            // 重置搜索框
+            document.getElementById('searchInput').value = '';
+            
+            // 重置分类
+            currentTaxonomy = 'all';
+            document.querySelectorAll('.taxonomy-header, .taxonomy-child').forEach(item => {
+                item.classList.remove('active', 'selected');
+            });
+            document.querySelectorAll('.taxonomy-header')[0].classList.add('active');
+            
+            // 显示主页内容
+            document.getElementById('welcomeSection').style.display = 'block';
+            document.getElementById('speciesGridSection').style.display = 'block';
+            document.getElementById('gridTitle').textContent = '哺乳动物精选';
+            document.getElementById('speciesDetail').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('authPanel').style.display = 'none';
+            
+            // 重新渲染全部物种
+            renderSpeciesGrid(mammalDatabase.species);
+        }
+
+        // 执行搜索
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                showHomePage();
+                return;
+            }
+            
+            // 筛选物种
+            const filteredSpecies = mammalDatabase.species.filter(species => {
+                return species.chineseName.toLowerCase().includes(searchTerm) ||
+                       species.scientificName.toLowerCase().includes(searchTerm) ||
+                       species.description.toLowerCase().includes(searchTerm) ||
+                       species.taxonomy.order.toLowerCase().includes(searchTerm) ||
+                       species.taxonomy.family.toLowerCase().includes(searchTerm);
+            });
+            
+            // 更新网格标题
+            document.getElementById('gridTitle').textContent = `搜索结果: "${searchTerm}"`;
+            
+            // 渲染搜索结果
+            renderSpeciesGrid(filteredSpecies);
+            
+            // 确保显示物种网格
+            showSpeciesGrid();
+        }
+
+        // 显示管理员面板
+        function showAdminPanel() {
+            // 模拟管理员登录
+            isAdmin = true;
+            
+            // 隐藏其他部分
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('speciesGridSection').style.display = 'none';
+            document.getElementById('speciesDetail').style.display = 'none';
+            document.getElementById('authPanel').style.display = 'none';
+            
+            // 显示管理员面板
+            const adminPanel = document.getElementById('adminPanel');
+            adminPanel.style.display = 'block';
+            
+            // 填充管理员表格
+            const tableBody = document.getElementById('adminTableBody');
+            tableBody.innerHTML = '';
+            
+            mammalDatabase.species.forEach(species => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${species.id}</td>
+                    <td>${species.chineseName}</td>
+                    <td><em>${species.scientificName}</em></td>
+                    <td>${species.taxonomy.order} - ${species.taxonomy.family}</td>
+                    <td><span class="species-status ${species.conservationColor}">${species.conservationStatus}</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="action-btn action-view" onclick="viewSpeciesInAdmin(${species.id})">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="action-btn action-edit" onclick="editSpecies(${species.id})">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="action-btn action-delete" onclick="deleteSpecies(${species.id})">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 在管理员面板中查看物种
+        function viewSpeciesInAdmin(speciesId) {
+            // 先切换到物种详情
+            showSpeciesDetail(speciesId);
+            
+            // 在详情页添加管理员操作按钮
+            const detailSection = document.getElementById('speciesDetail');
+            const backButton = detailSection.querySelector('.back-button');
+            
+            const adminButtons = document.createElement('div');
+            adminButtons.style.marginTop = '1rem';
+            adminButtons.innerHTML = `
+                <button class="btn btn-primary" onclick="editSpecies(${speciesId})" style="margin-right: 0.5rem;">
+                    <i class="fas fa-edit"></i> 编辑此物种
+                </button>
+                <button class="btn btn-admin" onclick="showAdminPanel()">
+                    <i class="fas fa-cog"></i> 返回管理面板
+                </button>
+            `;
+            
+            backButton.parentNode.insertBefore(adminButtons, backButton.nextSibling);
+        }
+
+        // 编辑物种
+        function editSpecies(speciesId) {
+            alert(`编辑物种 #${speciesId} - 此功能将在后续版本中实现`);
+            // 实际实现中，这里会打开一个编辑表单
+        }
+
+        // 删除物种
+        function deleteSpecies(speciesId) {
+            if (confirm(`确定要删除物种 #${speciesId} 吗？此操作不可撤销。`)) {
+                alert(`物种 #${speciesId} 已删除 - 演示模式下不会实际删除数据`);
+                // 实际实现中，这里会从数据库中删除物种
+            }
+        }
+
+        // 显示新增物种表单
+        function showAddSpeciesForm() {
+            alert("新增物种表单 - 此功能将在后续版本中实现");
+            // 实际实现中，这里会打开一个新增物种的表单
+        }
+
+        // 显示登录/注册面板
+        function showAuthPanel(type) {
+            // 隐藏其他部分
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('speciesGridSection').style.display = 'none';
+            document.getElementById('speciesDetail').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            
+            // 显示认证面板
+            const authPanel = document.getElementById('authPanel');
+            authPanel.style.display = 'block';
+            
+            if (type === 'login') {
+                authPanel.innerHTML = `
+                    <h2 class="auth-title">用户登录</h2>
+                    <form class="auth-form" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label">用户名或邮箱</label>
+                            <input type="text" class="form-input" id="loginUsername" placeholder="请输入用户名或邮箱" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">密码</label>
+                            <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1rem;">登录</button>
+                    </form>
+                    <div class="auth-toggle">
+                        还没有账号？ <a onclick="showAuthPanel('register')">立即注册</a>
+                    </div>
+                `;
+            } else {
+                authPanel.innerHTML = `
+                    <h2 class="auth-title">用户注册</h2>
+                    <form class="auth-form" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-input" id="registerUsername" placeholder="请输入用户名" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">邮箱地址</label>
+                            <input type="email" class="form-input" id="registerEmail" placeholder="请输入邮箱地址" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">密码</label>
+                            <input type="password" class="form-input" id="registerPassword" placeholder="请输入密码" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">确认密码</label>
+                            <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="请再次输入密码" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1rem;">注册</button>
+                    </form>
+                    <div class="auth-toggle">
+                        已有账号？ <a onclick="showAuthPanel('login')">立即登录</a>
+                    </div>
+                `;
+            }
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 处理登录
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // 模拟登录验证
+            if (username && password) {
+                isLoggedIn = true;
+                alert(`欢迎回来，${username}！登录成功。`);
+                showHomePage();
+                
+                // 更新导航栏按钮
+                document.querySelector('.user-actions').innerHTML = `
+                    <button class="btn btn-outline" onclick="showAuthPanel('login')" style="pointer-events: none;">
+                        <i class="fas fa-user"></i> ${username}
+                    </button>
+                    <button class="btn btn-admin" onclick="showAdminPanel()">管理面板</button>
+                `;
+            } else {
+                alert('请填写用户名和密码！');
+            }
+        }
+
+        // 处理注册
+        function handleRegister(event) {
+            event.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            
+            // 模拟注册验证
+            if (!username || !email || !password) {
+                alert('请填写所有必填字段！');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                alert('两次输入的密码不一致！');
+                return;
+            }
+            
+            // 模拟注册成功
+            isLoggedIn = true;
+            alert(`欢迎，${username}！注册成功。`);
+            showHomePage();
+            
+            // 更新导航栏按钮
+            document.querySelector('.user-actions').innerHTML = `
+                <button class="btn btn-outline" onclick="showAuthPanel('login')" style="pointer-events: none;">
+                    <i class="fas fa-user"></i> ${username}
+                </button>
+                <button class="btn btn-admin" onclick="showAdminPanel()">管理面板</button>
+            `;
+        }
+    </script>
+</body>
+</html>
